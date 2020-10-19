@@ -4,11 +4,10 @@ SCRIPTNAME=`basename "$0"`
 
 CONFIGFILE=~/.orgkeysconfig
 
-USAGE="$SCRIPTNAME [ -r ] org key
+USAGE="$SCRIPTNAME [ -r ] org
 
 Options:
     org 						organization where to look
-    key 						key to find owner
     -r 							reset credentials
 
 "
