@@ -1,37 +1,58 @@
 #!/bin/bash
 
-me=`basename "$0"`
+SCRIPTNAME=`basename "$0"`
 
-while [[ $# -gt 1 ]]
-do
-	key="$1"
-	case $key in
-	    -u|--user)
-	    user="$2"
-	    shift
-	    ;;
-	    -t|--token)
-	    token="$2"
-	    shift
-	    ;;
-	    -o|--org)
-	    organization="$2"
-	    shift
-	    ;;
-	    *)
-	    # unknown option
-	    ;;
-	esac
-	shift
-done
+CONFIGFILE=~/.orgkeysconfig
 
-if [ -z "$user" ] || [ -z "$token" ] || [ -z "$organization" ]; then
-	echo "Usage: $me -u username -t token -o organization"
-	exit 1
+USAGE="$SCRIPTNAME [ -r ] org key
+
+Options:
+    org 						organization where to look
+    key 						key to find owner
+    -r 							reset credentials
+
+"
+
+list_keys() {
+	keys=`curl --silent -u $ORG_KEYS_USERNAME:$ORG_KEYS_TOKEN "https://github.com/$1.keys"`
+	if [ ! -z "$keys" ]; then
+		printf "\033[0;33m# $1:\033[0m\n$keys\n"
+	fi
+}
+
+if [[ $1 == "-r" ]]; then
+  rm $CONFIGFILE > /dev/null 2>&1
+  shift
 fi
 
-base_url="https://api.github.com/orgs/$organization/members?per_page=100"
+if [[ $# -lt 1 ]] || [[ $1 == "-h" ]]; then
+  echo "usage: $USAGE"
+  exit
+fi
 
-for i in `curl -u $user:$token $base_url 2>&1 | grep login | sed 's/\"login"://g;s/[\", ]//g'` ; do
-	key=`curl --silent -u $user:$token "https://github.com/$i.keys"` && echo -e "\n### $i ###\n\n$key\n" ;
+ORG=$1
+
+source $CONFIGFILE > /dev/null 2>&1
+
+if [[ "$ORG_KEYS_USERNAME" == "" ]];then
+	read -p "Enter your Github username: " ORG_KEYS_USERNAME
+	read -p "Enter your Github api token: " ORG_KEYS_TOKEN
+
+	echo "export ORG_KEYS_USERNAME=$ORG_KEYS_USERNAME" > $CONFIGFILE
+	echo "export ORG_KEYS_TOKEN=$ORG_KEYS_TOKEN" >> $CONFIGFILE
+fi
+
+base_url="https://api.github.com/orgs/$ORG/members?per_page=100"
+
+USER_LIST=`curl -u $ORG_KEYS_USERNAME:$ORG_KEYS_TOKEN $base_url 2>&1 | grep login | sed 's/\"login"://g;s/[\", ]//g'`
+
+if [[ "$USER_LIST" == "" ]];then
+	printf "\033[0;31mUnable to get a list of users for organization $ORG - check your username and token (reset with -r)\033[0m\n"
+	echo "usage: $USAGE"
+ 	exit
+fi
+
+for i in $USER_LIST ; do
+	list_keys $i &
 done
+wait
