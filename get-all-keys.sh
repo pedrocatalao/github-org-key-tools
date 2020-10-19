@@ -16,7 +16,7 @@ Options:
 list_keys() {
 	keys=`curl --silent -u $ORG_KEYS_USERNAME:$ORG_KEYS_TOKEN "https://github.com/$1.keys"`
 	if [ ! -z "$keys" ]; then
-		printf "\033[0;33m# $1:\033[0m\n$keys\n"
+		printf "\033[0;33m# $1 ⇢ \033[0m $keys\n"
 	fi
 }
 
