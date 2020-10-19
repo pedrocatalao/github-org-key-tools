@@ -1,16 +1,14 @@
 # github-org-key-tools
 
-
 ## getorgkeys
 
-Retrieves all member keys for a given github organization.
-
+Retrieve all member keys for a given github organization.
 
 ## findkeyowner
 
-Finds who's the owner of a specified key withing a github organization.
+Find who's the owner of a specified key within a github organization.
 
-### Remarks
+#### Remarks
 
 These scripts requires you to specify your username and a token
 To generate a token go to Github -> Settings -> Developer settings -> Personal access tokens and generate a token with permission on `admin:org` and `user` roles.
